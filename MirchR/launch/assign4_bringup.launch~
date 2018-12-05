@@ -1,0 +1,7 @@
+<launch>
+	
+	<node pkg="turtlebot_bringup" name="minimal" type="minimal.launch"/>
+	<node pkg="turtlebot_rviz_launchers" name="view_navigation" type="view_navigation.launch"/>
+	<node pkg="turtlebot_navigation" name="amcl_demo" type="amcl_demo.launch" args="map_file:=/MirchR/src/map4.yaml"/>
+
+</launch>

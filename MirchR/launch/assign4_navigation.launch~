@@ -1,0 +1,5 @@
+<launch>
+	
+	<node pkg="MirchR" name="navigation" type="navigation.py"/>
+
+</launch>

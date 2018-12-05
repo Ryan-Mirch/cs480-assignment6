@@ -1,0 +1,4 @@
+<launch>
+<node pkg="turtlebot_bringup" name="minimal" type="minimal.launch"/>
+<node pkg="MirchR" type="MirchR" name="code" output="screen"/>
+</launch>
