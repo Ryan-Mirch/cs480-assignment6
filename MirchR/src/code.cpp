@@ -160,32 +160,13 @@ public:
 		if(current_speed > target_speed) current_speed -= acc;
 	}
 	
-	if((dist_val <= 1) && (dist_val >= 0.9)){
+	if(((dist_val <= 1) && (dist_val >= 0.9)) || isnan(dist_val)){
 		ROS_INFO_STREAM("sweet");
 		target_speed = 0;
 		if(abs(current_speed - target_speed) < 0.02)current_speed = target_speed;
 		else if(current_speed > target_speed) current_speed -= acc;
 		else if(current_speed < target_speed) current_speed += acc;
-	}
-	if(isnan(dist_val)){
-		ROS_INFO_STREAM("depth nan");
-
-		target_speed = 0;
-		if(abs(current_speed - target_speed) < 0.02)current_speed = target_speed;
-		else if(current_speed > target_speed) current_speed -= acc;
-		else if(current_speed < target_speed) current_speed += acc;
-
-		/*
-		if(current_speed > target_speed) target_speed = current_speed - 0.01;
-		else if(current_speed < target_speed) target_speed = current_speed + 0.01;
-
-		if(abs(0 - target_speed) < 0.02)target_speed = 0;
-		
-		current_speed = target_speed;
-
-		*/
-	}
-	
+	}	
 	
 	if(dis_min > 4000){ // searching state
 		ROS_INFO_STREAM("searching");
