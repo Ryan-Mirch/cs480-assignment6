@@ -114,11 +114,9 @@ public:
         }
     }
 
-	//assumes 640 columns
+	//assumes 670 columns
 	geometry_msgs::Twist base_cmd;
-	base_cmd.linear.x = base_cmd.linear.y = base_cmd.angular.z = 0;
-
-	
+	base_cmd.linear.x = base_cmd.linear.y = base_cmd.angular.z = 0;	
 
 	if(col < 320){
 		current_rotate = -0.0078125 * col + 2.5; //left		
