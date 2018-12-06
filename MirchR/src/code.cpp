@@ -13,7 +13,20 @@ static const std::string OPENCV_WINDOW = "Image window";
 
 int row;
 int col;
+
+int sweepTime;
+
 float dist_val;
+float current_rotate = 0;
+
+float current_speed = 0;
+float target_speed = 0;
+
+bool searching = false;
+int searchTime = 0;
+bool searchingRight = true;
+
+const static float acc = 0.02;
 
 class ImageConverter
 {
@@ -101,45 +114,122 @@ public:
         }
     }
 
-	// get raw z value (in mm)
-
-	//uint16_t z_raw = depth_sub_.at<uint16_t>(row, col);
-
-	// z [meters]
-
-	//int z_mean = z_raw * 0.001;
-
 	//assumes 640 columns
 	geometry_msgs::Twist base_cmd;
 	base_cmd.linear.x = base_cmd.linear.y = base_cmd.angular.z = 0;
 
-	if(col < 310){
-		base_cmd.angular.z = 0.75; //left
+	
+
+	if(col < 320){
+		current_rotate = -0.0078125 * col + 2.5; //left		
+	}
+
+	else if(col > 340){
+		current_rotate = -0.007575* col + 2.5757; //right
 	}
 	
-	if(col < 150){
-		base_cmd.angular.z = 1.5; //left
-	}
-
-	if(col > 330){
-		base_cmd.angular.z = -0.75; //right
-	}
-
-	if(col > 480){
-		base_cmd.angular.z = -1.5; //right
-	}
+	else {
+		current_rotate = 0;
+	}	
 
 	if(dist_val > 1){
-		base_cmd.linear.x = 0.25;
+		ROS_INFO_STREAM("forward .1");
+		target_speed = .1;
+		if(current_speed < target_speed) current_speed += acc;
+		if(current_speed > target_speed) current_speed -= acc;
+		
+	}
+
+	if(dist_val > 1.2){
+		ROS_INFO_STREAM("forward .3");
+		target_speed = .3;
+		if(current_speed < target_speed) current_speed += acc;
+		if(current_speed > target_speed) current_speed -= acc;
+		
+	}
+
+	if(dist_val > 1.4){
+		ROS_INFO_STREAM("forward .6");
+		target_speed = .8;
+		if(current_speed < target_speed) current_speed += acc;
+		if(current_speed > target_speed) current_speed -= acc;
+		
 	}
 
 	if(dist_val < 0.9){
-		base_cmd.linear.x = -0.25;
+		ROS_INFO_STREAM("backward");
+		target_speed = -0.4;
+		if(current_speed > target_speed) current_speed -= acc;
+	}
+	
+	if((dist_val <= 1) && (dist_val >= 0.9)){
+		ROS_INFO_STREAM("sweet");
+		target_speed = 0;
+		if(abs(current_speed - target_speed) < 0.02)current_speed = target_speed;
+		else if(current_speed > target_speed) current_speed -= acc;
+		else if(current_speed < target_speed) current_speed += acc;
+	}
+	if(isnan(dist_val)){
+		ROS_INFO_STREAM("depth nan");
+
+		target_speed = 0;
+		if(abs(current_speed - target_speed) < 0.02)current_speed = target_speed;
+		else if(current_speed > target_speed) current_speed -= acc;
+		else if(current_speed < target_speed) current_speed += acc;
+
+		/*
+		if(current_speed > target_speed) target_speed = current_speed - 0.01;
+		else if(current_speed < target_speed) target_speed = current_speed + 0.01;
+
+		if(abs(0 - target_speed) < 0.02)target_speed = 0;
+		
+		current_speed = target_speed;
+
+		*/
+	}
+	
+	
+	if(dis_min > 4000){ // searching state
+		ROS_INFO_STREAM("searching");
+		if(searching == false){
+			searchTime = 10;					
+			searching = true;
+			sweepTime = 20;
+		}
+
+		if(searchingRight)current_rotate = -.9;
+		if(!searchingRight)current_rotate = .9;	
+
+		target_speed = 0;
+		if(abs(current_speed - target_speed) < 0.02)current_speed = target_speed;
+		else if(current_speed > target_speed) current_speed -= acc;
+		else if(current_speed < target_speed) current_speed += acc;	
+	
+		searchTime++;
+
+		
+
+		if(searchTime > sweepTime){
+			searchTime = 0;
+			searchingRight = !searchingRight;
+			sweepTime += 10;
+		}
+		
+	}
+	else {
+		searching = false;
 	}
 
+	base_cmd.angular.z = current_rotate;
+	base_cmd.linear.x = current_speed;
 
-	ROS_INFO_STREAM(col);
-	//ROS_INFO_STREAM(z_mean);
+
+	//ROS_INFO_STREAM(sweepTime);
+	//ROS_INFO_STREAM(dis_min);
+	//ROS_INFO_STREAM(current_rotate);
+	//ROS_INFO_STREAM(target_speed);
+	//ROS_INFO_STREAM(col);
+	//ROS_INFO("depth: %f", dist_val);
 
 	cmd_vel_pub_.publish(base_cmd); // publish the command
 
