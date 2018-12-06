@@ -147,7 +147,7 @@ public:
 	}
 
 	if(dist_val > 1.4){
-		ROS_INFO_STREAM("forward .6");
+		ROS_INFO_STREAM("forward .8");
 		target_speed = .8;
 		if(current_speed < target_speed) current_speed += acc;
 		if(current_speed > target_speed) current_speed -= acc;
